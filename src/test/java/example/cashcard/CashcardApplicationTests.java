@@ -21,8 +21,9 @@ class CashCardApplicationTests {
 
     @Test
     void shouldReturnACashCardWhenDataIsSaved() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards/99", String.class);
-
+        ResponseEntity<String> response = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .getForEntity("/cashcards/99", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
@@ -71,10 +72,6 @@ class CashCardApplicationTests {
         assertThat(amounts).containsExactlyInAnyOrder(123.45, 100.0, 150.00);
     }
 
-    
-
-
-
     @Test
     void shouldReturnAPageOfCashCards() {
     ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1", String.class);
@@ -86,16 +83,29 @@ class CashCardApplicationTests {
     }
 
     @Test
-void shouldReturnASortedPageOfCashCardsWithNoParametersAndUseDefaultValues() {
-    ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    void shouldReturnASortedPageOfCashCardsWithNoParametersAndUseDefaultValues() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-    DocumentContext documentContext = JsonPath.parse(response.getBody());
-    JSONArray page = documentContext.read("$[*]");
-    assertThat(page.size()).isEqualTo(3);
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        JSONArray page = documentContext.read("$[*]");
+        assertThat(page.size()).isEqualTo(3);
 
-    JSONArray amounts = documentContext.read("$..amount");
-    assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
-}
+        JSONArray amounts = documentContext.read("$..amount");
+        assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
+    }
+
+    @Test
+    void shouldNotReturnACashCardWhenUsingBadCredentials() {
+        ResponseEntity<String> response = restTemplate
+            .withBasicAuth("BAD-USER", "abc123")
+            .getForEntity("/cashcards/99", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        response = restTemplate
+            .withBasicAuth("sarah1", "BAD-PASSWORD")
+            .getForEntity("/cashcards/99", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
 
 }
