@@ -1,4 +1,4 @@
-#Learning
+# Learning
 * You’ve delved into REST and the lore of HTTP verbs: not just GET, but also PUT, PATCH, and POST.
 * You've used HTTP response status codes as designed: not just 200 OK, but 204 NO CONTENT and 201 CREATED as well.
 * By using Spring Boot, you’ve now got a solid understanding of Spring. You learned about its Inversion of Control container,
